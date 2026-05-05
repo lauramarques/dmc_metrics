@@ -1,7 +1,9 @@
 ---
 title: "Metrics for Data Management Campus"
-output: html_document
-date: "2026-04-29"
+output:
+  pdf_document: default
+  html_document: default
+date: "2026-05-05"
 ---
 
 ```{r setup, include=FALSE}
@@ -85,7 +87,7 @@ campaign_dates <- tibble(
 
 ```
 
-##### Figure 1. Number of logged-in users per week for each module in OpenLearnity
+##### Figure 1. Number of logged-in users per week for each module in OpenLearnity.
 Selected time period: Jan 2026 up to now.   
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=7}
@@ -148,6 +150,7 @@ df_openlearnity_users <- df_openlearnity |>
   summarise(total_users = n())
 
 ```
+\newpage
 
 ## B) Matomo for OpenLearnity
 
@@ -253,7 +256,7 @@ metrics_ol_matomo <- bind_rows(metrics_long_openlearnity, metrics_long_matomo) |
 
 ```
 
-##### Figure 2. User behaviour from Open Learnity and Matomo
+##### Figure 2. User behaviour from Open Learnity and Matomo.
 Selected time period: Jan-Mar 2026.  
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.height=6, out.width="95%", fig.align="center"}
@@ -294,12 +297,13 @@ ggplot(metrics_ol_matomo,
   )
 
 ```
+\newpage
 
 ## C) Google Analytics for ORD Portal
 
 **Direct measures:**      
 
-- **page_title**: page title. 
+- **page_title**: page title.   
 - **views**: total number of page views. A proxy of intensity of use per page.   
 - **active_users**: number of users who engaged with the page (i.e., session lasted 10 seconds or longer). A proxy of reach per page.   
 
@@ -354,7 +358,7 @@ metrics_long_ga <- pivot_longer(df_ga_metrics,
 
 ```
 
-##### Figure 3. Page views and active users for the ORD pages in Google Analytics
+##### Figure 3. Page views and active users for the ORD pages in Google Analytics.
 Selected time period: Jan-Mar 2026.  
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.height=6, out.width="95%", fig.align="center"}
@@ -386,6 +390,7 @@ ggplot(metrics_long_ga,
   )
 
 ```
+\newpage
 
 ## D) Zenodo OER
 
@@ -449,7 +454,8 @@ df_long <- df_summary |>
 
 ```
 
-##### Figure 4. Total engagement by resource type and module in Zenodo
+##### Figure 4. Total engagement by resource type and module in Zenodo.
+Full record (no temporal filtering).   
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.height=6, out.width="95%", fig.align="center"}
 
@@ -483,7 +489,10 @@ zenodo_fig2 <- ggplot(df_summary, aes(x = reorder(resource_name, total),
 zenodo_fig2
 ```
 
-##### Figure 5. Number of views and downloads by resource type and module in Zenodo
+\newpage
+
+##### Figure 5. Number of views and downloads by resource type and module in Zenodo.
+Full record (no temporal filtering).  
 
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=13, fig.height=7, out.width="100%", fig.align="center"}
 
