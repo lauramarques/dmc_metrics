@@ -7,6 +7,8 @@ library(dplyr)
 library(stringr)
 library(ggplot2)
 
+# data for this script is manually downloaded from the Google Analytics platform quaterly.
+
 # load data ----
 google_analytics_20260101_20260331 <- read.csv(here("data", "google_analytics", "google_analytics_20260101_20260331.csv"))
 

@@ -7,6 +7,8 @@ library(dplyr)
 library(stringr)
 library(ggplot2)
 
+# data for this script is manually downloaded from the Matomo platform quaterly.
+
 # load data ----
 matomo_pagetitles_20260101_20260331 <- read.csv(here("data", "matomo", "matomo_pagetitles_20260101_20260331.csv"))
 

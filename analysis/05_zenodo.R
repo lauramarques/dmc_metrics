@@ -5,6 +5,8 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 
+# data for this script is downloaded using the 04_zenodo_download.R script
+
 # load data
 zenodo_records <- read.csv(here("data", "zenodo", "zenodo_records.csv"))
 
@@ -122,3 +124,51 @@ zenodo_fig3 <- ggplot(df_long, aes(
   theme_minimal() +
   theme(legend.position = "bottom")
 zenodo_fig3
+
+# Plot other resources ----
+
+df_zenodo_other_resources <- zenodo_records |>
+  filter(institution != "eth_domain_measure3")
+
+df_other_summary <- df_zenodo_other_resources |>
+  group_by(title, institution) |>
+  summarise(
+    views = sum(views),
+    downloads = sum(downloads),
+    total = views + downloads,
+    .groups = "drop"
+  )
+
+df_other_long <- df_other_summary |>
+  pivot_longer(
+    cols = c(views, downloads),
+    names_to = "metric",
+    values_to = "value"
+  )
+
+zenodo_fig4 <- ggplot(df_other_long, aes(
+  x = institution,
+  y = value,
+  fill = metric
+)) +
+  geom_col(position = "stack", width = 0.3) +   # narrower bars
+  scale_x_discrete(labels = c(
+    "empa" = "EMPA",
+    "eth_library" = "ETH Library",
+    "lib4ri" = "Lib4RI",
+    "psi" = "PSI",
+    "wsl" = "WSL"
+  )) +
+  scale_fill_discrete(labels = c(
+    views = "Views",
+    downloads = "Downloads"
+  )) +
+  labs(
+    x = "Institution",
+    y = "Value",
+    title = "Number of views and downloads by institution in Zenodo",
+    fill = ""
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+zenodo_fig4

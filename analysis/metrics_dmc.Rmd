@@ -537,3 +537,69 @@ zenodo_fig3 <- ggplot(df_long, aes(
 zenodo_fig3
 
 ```
+
+
+```{r, include=FALSE}
+df_zenodo_other_resources <- zenodo_records |>
+  filter(institution != "eth_domain_measure3")
+
+df_other_summary <- df_zenodo_other_resources |>
+  group_by(title, institution) |>
+  summarise(
+    views = sum(views),
+    downloads = sum(downloads),
+    total = views + downloads,
+    .groups = "drop"
+  )
+
+df_other_long <- df_other_summary |>
+  pivot_longer(
+    cols = c(views, downloads),
+    names_to = "metric",
+    values_to = "value"
+  )
+
+```
+
+
+\newpage
+
+##### Figure 6. Number of views and downloads of other resources by institution in Zenodo.
+Full record (no temporal filtering).  
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=7, out.width="90%", fig.align="center"}
+
+zenodo_fig4 <- ggplot(df_other_long, aes(
+  x = institution,
+  y = value,
+  fill = metric
+)) +
+  geom_col(position = "stack", width = 0.3) +   # narrower bars
+  scale_x_discrete(labels = c(
+    "empa" = "EMPA",
+    "eth_library" = "ETH Library",
+    "lib4ri" = "Lib4RI",
+    "psi" = "PSI",
+    "wsl" = "WSL"
+  )) +
+  scale_fill_discrete(labels = c(
+    views = "Views",
+    downloads = "Downloads"
+  )) +
+  labs(
+    x = "Institution",
+    y = "Count",
+    fill = ""
+  ) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+    axis.text.x = element_text(size = 10),
+    axis.text.y = element_text(size = 10),
+    legend.text = element_text(size = 10),
+    plot.title = element_text(size = 14),
+    strip.text = element_text(size = 10)
+  )
+zenodo_fig4
+
+```
+

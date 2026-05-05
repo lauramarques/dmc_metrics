@@ -4,11 +4,10 @@ library(httr)
 library(readr)
 library(dplyr)
 
-
 ## Authentication ----
 # This script requires authentication to access the data portal.
 # A valid COOKIE and CSRF_TOKEN must be provided.
-# These credentials should be set as environment variables in `.Renviron`:
+# These credentials should be set as environment variables in `.Renviron` and updated when expired.
 # The script reads them using `Sys.getenv()`.
 
 cookie <- Sys.getenv("COOKIE") # COOKIE (session cookie from a valid login)

@@ -5,6 +5,8 @@ library(tidyverse)
 library(lubridate)
 library(here)
 
+# data for this script is downloaded using the 00_openlearnity_download.R script
+
 # load data
 folder_path <- here::here("data/openlearnity")
 
