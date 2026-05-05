@@ -4,19 +4,17 @@ library(httr)
 library(readr)
 library(dplyr)
 
-# For several page or modules ----
 
-# To get cookie and/or csrf_token:
-# 1. Go to OpenLearnity -> Studio -> View Live -> and right click Inspect
-# 2. From the tabs Element Console Source, click on arrows >> and select Network
-# 3. Click on any element under Name and search for Headers
-# 4. Copy cookie and take the csrftoken from the cookie.
+## Authentication ----
+# This script requires authentication to access the data portal.
+# A valid COOKIE and CSRF_TOKEN must be provided.
+# These credentials should be set as environment variables in `.Renviron`:
+# The script reads them using `Sys.getenv()`.
 
-# Authentication
-cookie <- Sys.getenv("COOKIE")
-csrf_token <- Sys.getenv("CSRF_TOKEN")
+cookie <- Sys.getenv("COOKIE") # COOKIE (session cookie from a valid login)
+csrf_token <- Sys.getenv("CSRF_TOKEN") # CSRF_TOKEN (security token linked to the session)
 
-# Define courses & custom names
+# Define modules ----
 courses <- c(
   "course-v1:data+management+plan",
   "course-v1:ETH+sensitive+data",
@@ -44,8 +42,7 @@ course_names <- c(
   "course-v1:open+data+organisation" = "organisation"
 )
 
-# Function: get_data
-# Function: get_data
+# Read function  ----
 get_data <- function(course_id, cookie, csrf_token, filename_custom = NULL) {
   
   base_url <- paste0(
@@ -113,7 +110,7 @@ get_data <- function(course_id, cookie, csrf_token, filename_custom = NULL) {
   return(df)
 }
 
-# Loop over courses
+# Run function  ----
 results <- lapply(courses, function(course) {
   get_data(course, cookie, csrf_token)
 })
