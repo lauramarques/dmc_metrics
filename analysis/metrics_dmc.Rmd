@@ -1,9 +1,9 @@
 ---
-title: "Metrics for Data Management Campus"
+title: "Metrics for the Data Management Campus modules"
 output:
   pdf_document: default
   html_document: default
-date: "2026-05-05"
+date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE}
@@ -11,17 +11,22 @@ library(dplyr)
 library(tidyverse)
 library(lubridate)
 library(here)
+library(patchwork)
+library(ggtext)
 ```
 
-## A) OpenLearnity
+<br>
 
-**Direct measures:**    
-
-- **user_id**:	user identifier.      
-- **module_title**: module title.    
-- **last_login**: date of last login in the module. This variable overwrites each time the same user logs in.    
+This document loads and visualizes data on the usage of modules from the Data Management Campus.  
+The data are obtained from four sources: the OpenLearnity platform, Matomo, Google Analytics, and Zenodo.  
+A list of the variables used in the analysis is provided below.  
 
 ```{r, include=FALSE}
+
+# OpenLearnity ----
+# Direct measures: user_id, module_title, last_login
+# Derived variables: logged_users, logged_users_week
+
 # load data
 folder_path <- here::here("data/openlearnity")
 
@@ -61,15 +66,9 @@ df_openlearnity <- df_openlearnity |>
 
 ```
 
-**Derived variables:**    
-
-- **logged_users**: number of logged users per module during a specific period of time.    
-Calculated as count of unique users per module.   
-
-- **logged_users_week**: number of unique users per week for each module.         
-Calculated as count of unique users grouped by week (from last_login) and module.  
-
 ```{r, include=FALSE}
+
+# Derived variables: Number of logged-in users per week and module
 
 # create weekly aggregation
 df_openlearnity_weekly_activity <- df_openlearnity |>
@@ -86,13 +85,14 @@ campaign_dates <- tibble(
 )
 
 ```
+<br>
 
-##### Figure 1. Number of logged-in users per week for each module in OpenLearnity.
-Selected time period: Jan 2026 up to now.   
+##### 1. Number of logged-in users per week for each module in OpenLearnity
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=7}
-# plot
-weekly_module_activity_plot <- ggplot(df_openlearnity_weekly_activity |>
+<br>
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=7,out.width="95%", fig.align="center"}
+
+fig1 <- ggplot(df_openlearnity_weekly_activity |>
               filter(week >= as.Date("2026-01-01")), 
             aes(x = week, y = n_users)) +
   geom_col(fill = "#2C7BB6", alpha = 0.8) +
@@ -121,7 +121,9 @@ weekly_module_activity_plot <- ggplot(df_openlearnity_weekly_activity |>
              ))) +
   scale_color_manual(name = "", values = c("Marketing campaign" = "red")) + 
   labs(x = "Week",
-       y = "Number of users") +
+       y = "Number of users",
+       caption = "<b>Selected time period:</b> Jan 2026 up to now.<br>
+       <b>Data source:</b> OpenLearnity.") +
   theme_minimal(base_size = 14) +
   theme(
     legend.position = "bottom",
@@ -129,15 +131,24 @@ weekly_module_activity_plot <- ggplot(df_openlearnity_weekly_activity |>
     axis.text.y = element_text(size = 12),
     strip.text = element_text(size = 13),
     plot.title = element_text(size = 16),
-    axis.title = element_text(size = 13)
+    axis.title = element_text(size = 13),
+    #plot.caption = element_text(hjust = 0, face = "bold", size = 12)
+    plot.caption = element_markdown(size = 12, hjust = 1, lineheight = 1.3)
   )
 
-weekly_module_activity_plot
+fig1 
+
 ```
+<br>
+
+Figure 1 shows weekly user activity across modules based on OpenLearnity enrollment data.     
+Blue bars represent the *logged_users_week* variable (number of unique users logging in per module each week).   
+Weekly user activity is generally low, ranging from 0 to about 6 users per week depending on the module, with no strong differences in magnitude across time.   
+Red dashed lines indicate the timing of the marketing campaign, corresponding to the week when the modules were advertised on ETH Campus Channel screens. No systematic change in activity is visible around the campaign period.
 
 ```{r, include=FALSE}
 
-# Number of users per module
+# Derived variables: Number of users per module
 
 # Select the time period: 
 # Jan-Mar 2026
@@ -152,24 +163,30 @@ df_openlearnity_users <- df_openlearnity |>
 ```
 \newpage
 
-## B) Matomo for OpenLearnity
-
-**Direct measures:**    
-Data from Page Titles.   
-
-- **module_title**: module title.   
-- **unique_pageviews**: unique page views of the module’s “About” page (counted once per session).   
-- **entrances**: number of sessions that start on this page.    
-- **actions_after_entry**: number of interactions (e.g., clicks, downloads, pageviews) performed after the session starts on this page.
-
-**Derived variables:**   
-
-- **engagement_per_entrance**: average number of user interactions generated after sessions start on the “About” page of a module.   
-Calculated as actions_after_entry / entrances.  
-
 ```{r, include=FALSE}
+
+# Matomo ----
+# Direct measures: module_title, unique_pageviews, entrances, actions_after_entry, bounces
+# Derived variables: engagement_per_entrance, bounces rate
+
+# unique_pageviews: proxy for reach / interest
+# engagement_per_entrance: proxy for depth of interaction
+
 # load data ----
-matomo_pagetitles_20260101_20260331 <- read.csv(here("data", "matomo", "matomo_pagetitles_20260101_20260331.csv"))
+matomo_pages_20260101_20260331 <- read.csv(here("data", "matomo", "matomo_pages_20260101_20260331.csv"))
+
+pages <- c(
+  "/courses/course-v1:open fair data/about",
+  "/courses/course-v1:data management plan/about",
+  "/courses/course-v1:open data organisation/about",
+  "/courses/course-v1:ETH sensitive data/about",
+  "/courses/course-v1:ETH documentation metadata/about",
+  "/courses/course-v1:storage backup versioning/about",
+  "/courses/course-v1:ETH code reproducibility/about",
+  "/courses/course-v1:open formats code/about",
+  "/courses/course-v1:ETH data licences/about",
+  "/courses/course-v1:ETH RDM-01 2024/about"
+)
 
 modules <- c(
   "Open Research Data, Research Data Management, and FAIR",
@@ -184,29 +201,22 @@ modules <- c(
   "Data Publishing and Long-Term Preservation"
 )
 
-matomo_jan_mar_2026 <- matomo_pagetitles_20260101_20260331 |>
-  mutate(Label = str_remove(Label, "\\s*\\|\\s*OpenLearnity")) |>
-  mutate(Label = str_trim(Label)) |>
-  mutate(Label = case_when(
-    #str_detect(Label, "Data Organisation and Management|Data Organization and Management") ~ "Data Organisation and Management",
-    str_detect(Label, "Open Science and FAIR Data Principles|Open Research Data") ~ "Open Research Data, Research Data Management, and FAIR",
-    TRUE ~ Label
-  )) |>
-  filter(Label %in% modules) |>
-  group_by(Label) |>
-  summarise(across(where(is.numeric), sum), .groups = "drop") |>
+module_map <- setNames(modules, pages)
+
+# Extract and rename
+matomo_jan_mar_2026 <- matomo_pages_20260101_20260331 |>
+  filter(Label %in% pages) |>
+  mutate(Label = module_map[Label]) |>
   rename(module_title = Label,
          unique_pageviews = Unique.Pageviews,
          pageviews = Pageviews,
          total_time_spent = Total.time.spent.by.visitors..in.seconds.,
          entrances = Entrances,
+         bounces = Bounces,
          actions_after_entry = Actions.after.entering.here) |>
-  ungroup() |>
   mutate(
-    # average time per page view
-    # avg_time_on_page = total_time_spent / pageviews,
-    # engagement per entrance
-    engagement_per_entrance = actions_after_entry / entrances
+    engagement_per_entrance = actions_after_entry / entrances,
+    bounce_rate = bounces / entrances * 100
   )
 
 #select variables to plot ----
@@ -214,25 +224,27 @@ matomo_metrics <- matomo_jan_mar_2026 |>
   select(
     module_title,
     unique_pageviews,
-    #avg_time_on_page,
-    engagement_per_entrance
+    engagement_per_entrance,
+    bounce_rate
   )
 
 # reshape for plotting ----
 metrics_long_matomo <- matomo_metrics |>
   pivot_longer(
-    cols = c(unique_pageviews, engagement_per_entrance),
+    cols = c(unique_pageviews, engagement_per_entrance, bounce_rate),
     names_to = "metric",
     values_to = "value"
   ) |>
   mutate(
     metric = factor(metric,
                     levels = c("unique_pageviews",
-                               "engagement_per_entrance")),
+                               "engagement_per_entrance",
+                               "bounce_rate")),
     
     metric_label = recode(metric,
-                          unique_pageviews = "Unique pageviews \nin Matomo",
-                          engagement_per_entrance = "Engagement per entrance \nin Matomo"
+                          unique_pageviews = "Unique pageviews",
+                          engagement_per_entrance = "Engagement per entrance",
+                          bounce_rate = "Bounce rate"
     )
   )
 
@@ -240,7 +252,7 @@ metrics_long_matomo <- matomo_metrics |>
 metrics_long_openlearnity <- df_openlearnity_users |>
   mutate(
     metric = "total_users",
-    metric_label = "Logged users \nin Open Learnity",
+    metric_label = "Logged users",
     value = total_users
   ) |>
   rename(module_title = module_label) |>
@@ -249,42 +261,46 @@ metrics_long_openlearnity <- df_openlearnity_users |>
 # combine datasets OL and Matomo
 metrics_ol_matomo <- bind_rows(metrics_long_openlearnity, metrics_long_matomo) |>
   mutate(metric_label = factor(metric_label,
-                               levels = c("Logged users \nin Open Learnity",
-                                          "Unique pageviews \nin Matomo",
-                                          "Engagement per entrance \nin Matomo")
+                               levels = c("Logged users",
+                                          "Unique pageviews",
+                                          "Engagement per entrance",
+                                          "Bounce rate")
   ))
 
 ```
+<br>
 
-##### Figure 2. User behaviour from Open Learnity and Matomo.
-Selected time period: Jan-Mar 2026.  
+##### 2. User behaviour from Open Learnity and Matomo.
 
+<br>
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.height=6, out.width="95%", fig.align="center"}
 
-# plot combine OL and Matomo
-ggplot(metrics_ol_matomo,
+fig2 <- ggplot(metrics_ol_matomo,
        aes(x = reorder(module_title, value),
            y = value)) +
   
   geom_col(aes(fill = metric)) +
   coord_flip() +
   
-  facet_wrap(~metric_label, scales = "free_x") +
+  facet_wrap(~metric_label, scales = "free_x", nrow = 1) +
   
   scale_y_continuous(labels = scales::label_number(accuracy = 1)) +
-
+  
   scale_fill_manual(values = c(
     "total_users" = "#7570B3",
     "unique_pageviews" = "#1B9E77",
-    "engagement_per_entrance" = "#D95F02"
+    "engagement_per_entrance" = "#D95F02",
+    "bounce_rate" = "#E6AB02"
   )) +
   
   labs(
-    x = "Module",
-    y = "Metric",
-    fill = ""
+    title = "User behaviour from Open Learnity and Matomo",
+    x = "",
+    y = "",
+    fill = "",
+    caption = "<b>Selected time period:</b> Jan-Mar 2026.<br>
+       <b>Data source:</b> OpenLearnity and Matomo."
   ) +
-  
   theme_minimal() +
   theme(
     legend.position = "none",
@@ -293,22 +309,40 @@ ggplot(metrics_ol_matomo,
     strip.text = element_text(size = 12),
     plot.title = element_text(size = 14),
     axis.title = element_text(size = 12),
-    legend.text = element_text(size = 11)
+    plot.caption = element_markdown(size = 12, hjust = 1, lineheight = 1.3),
   )
 
+fig2
+
 ```
+
+<br>
+
+Figure 2 shows user behaviour across modules using Open Learnity user data and Matomo analytics. Four indicators are displayed per module: *logged_users* (Open Learnity enrollment), *unique_pageviews*, *engagement_per_entrance*, and *bounce_rate* (Matomo metrics).  
+
+Logged users represent the number of participants enrolled in each module.    
+Unique pageviews is the number of distint page views of the module’s “About” page ( counted once per session).  
+Engagement per entrance is the average number of user interactions after sessions start on the “About” page of a module. This is a proxy for content depth and interest.  
+Bounce rate is the proportion of single-page sessions without further interaction.  
+
+Best-performing module:     
+The Data and Code Licenses shows the strongest overall engagement in the dataset. It combines a relatively high number of unique pageviews (72) with the highest engagement per entrance (10.1 actions per session), indicating that users interact intensively once they enter the content. In addition, it has one of the lowest bounce rates (21%), suggesting strong retention.   
+
+Lowest-performing module:    
+The Writing Data Management Plans module shows the weakest engagement profile. Although it receives a moderate number of unique pageviews (34), it has the lowest engagement per entrance (3.87 actions per session), indicating limited interaction once users enter the module. Its bounce rate (40%) is also relatively high, suggesting that a significant proportion of users leave without further interactions.   
+
+Limitations:  
+Data is based on the *About* pages and does not capture complete user journeys across the platform, including navigation through home pages or across modules.  
+The indicators are best interpreted as proxies for interaction intensity rather than direct measures of course progression or learning outcomes.  
+
 \newpage
 
-## C) Google Analytics for ORD Portal
-
-**Direct measures:**      
-
-- **page_title**: page title.   
-- **views**: total number of page views. A proxy of intensity of use per page.   
-- **active_users**: number of users who engaged with the page (i.e., session lasted 10 seconds or longer). A proxy of reach per page.   
-
 ```{r, include=FALSE}
-# load data ----
+
+# Google Analytics
+# Direct measures: page_title, views, active_users  
+
+# load data
 google_analytics_20260101_20260331 <- read.csv(here("data", "google_analytics", "google_analytics_20260101_20260331.csv"))
 
 ord_pages <- c(
@@ -330,15 +364,28 @@ google_analytics_jan_mar_2026 <- google_analytics_20260101_20260331 |>
          key_events = Key.events,
          total_revenue = Total.revenue) |>
   mutate(page_title = str_remove(page_title, " \\| Open Research Data Portal")) |>
-  filter(page_title %in% ord_pages)
+  filter(page_title %in% ord_pages) |>
+  mutate(page_title = recode(page_title,
+                             "Training Archive" = "Training",
+                             "Documents Archive" = "Documents",
+                             "Research Data Services Explorer" = "Services",
+                             "Open Research Data Portal" = "Home")) |>
+  mutate(page_title = factor(page_title,
+                             levels = c(
+                               "Home",
+                               "Projects",
+                               "Training",
+                               "Services",
+                               "Documents",
+                               "About"
+                             )))
 
 # calculate and select variables to plot ----
 df_ga_metrics <- google_analytics_jan_mar_2026 |>
   select(
     page_title,
     views,
-    active_users,
-    views_per_user)
+    active_users)
 
 # reshape for plotting ----
 metrics_long_ga <- pivot_longer(df_ga_metrics,
@@ -357,13 +404,14 @@ metrics_long_ga <- pivot_longer(df_ga_metrics,
   )
 
 ```
+<br>
 
-##### Figure 3. Page views and active users for the ORD pages in Google Analytics.
-Selected time period: Jan-Mar 2026.  
+##### 3. Page views and active users for the ORD pages in Google Analytics.
 
+<br>
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.height=6, out.width="95%", fig.align="center"}
-# plot ----
-ggplot(metrics_long_ga, 
+
+fig3 <- ggplot(metrics_long_ga, 
        aes(x = reorder(page_title, value),
           y = value,
           fill = metric)) +
@@ -376,8 +424,8 @@ ggplot(metrics_long_ga,
   labs(
     y = "Metric",
     x = "ORD portal pages",
-    fill = ""
-  ) +
+    caption = "<b>Selected time period:</b> Jan-Mar 2026.<br>
+       <b>Data source:</b> Google Analytics.") +
   theme_minimal() +
   theme(
     legend.position = "bottom",
@@ -386,23 +434,25 @@ ggplot(metrics_long_ga,
     strip.text = element_text(size = 12),
     plot.title = element_text(size = 14),
     axis.title = element_text(size = 12),
-    legend.text = element_text(size = 11)
+    legend.text = element_text(size = 11),
+    plot.caption = element_markdown(size = 12, hjust = 1, lineheight = 1.3)
   )
 
+fig3
+
 ```
+<br>
+
+Figure 3 shows the distribution of user engagement across ORD portal pages based on Google Analytics data.  
+Blue and red bars represent *views* (total number of page views; proxy of intensity of use per page) and *active_users* (number of users whose session lasted at least 10 seconds; proxy of reach per page) for each ORD portal page, obtained from Google Analytics.   
+The Training page correspond to the Data Management Campus and shows the highest views (1000) but fewer users (374), indicating high engagement per user (strong content usage).  
+
 \newpage
-
-## D) Zenodo OER
-
-**Direct measures:**  
-
-- **record_id**: zenodo resource identifier.       
-- **resource_title**: resource title.    
-- **resource_type**: lesson, presentation, video_audio.   
-- **views**: number of times resource was viewed.  
-- **downloads**: number of times resource was downloaded.  
-
 ```{r, include=FALSE}
+
+# Zenodo ----
+# Direct measures: record_id, resource_title, resource_type, views, downloads
+
 # load data
 zenodo_records <- read.csv(here("data", "zenodo", "zenodo_records.csv"))
 
@@ -453,13 +503,14 @@ df_long <- df_summary |>
   )
 
 ```
+<br>
 
-##### Figure 4. Total engagement by resource type and module in Zenodo.
-Full record (no temporal filtering).   
+##### 4. Total engagement by resource type and module in Zenodo.
 
+<br>
 ```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.height=6, out.width="95%", fig.align="center"}
 
-zenodo_fig2 <- ggplot(df_summary, aes(x = reorder(resource_name, total), 
+fig4 <- ggplot(df_summary, aes(x = reorder(resource_name, total), 
                                       y = total, fill = resource_group)) +
   geom_col() +
   coord_flip() +
@@ -472,8 +523,10 @@ zenodo_fig2 <- ggplot(df_summary, aes(x = reorder(resource_name, total),
   labs(
     x = "Module",
     y = "Total (views + downloads)",
-    fill = "Resource type"
-  ) +
+    fill = "Resource type",
+    caption = "<b>Selected time period:</b> Full record (no temporal filtering).<br>
+       <b>Data source:</b> Zenodo."
+    ) +
     theme_minimal() +
     theme(
     legend.position = "bottom",
@@ -481,20 +534,27 @@ zenodo_fig2 <- ggplot(df_summary, aes(x = reorder(resource_name, total),
     axis.text.y = element_text(size = 11),
     legend.text = element_text(size = 11),
     plot.title = element_text(size = 14),
-    plot.caption = element_text(
-    hjust = 0.5,   # center
-    size = 12      # bigger
-  )
+    #plot.caption = element_text(hjust = 0.5, size = 12)     
+    plot.caption = element_markdown(size = 12, hjust = 1, lineheight = 1.3)
 )
-zenodo_fig2
+fig4
+
 ```
+<br>
+
+Figure 4 displays the combined total of *views* and *downloads* per resource, as recorded in Zenodo.  
+Blue, green, and red bars represent different resource types: modules, intro videos, and case studies, respectively. Only 6 of the 10 modules include associated case studies (PowToon videos).   
+Intro videos account for the majority of total engagement, whereas modules generally receive fewer views and downloads.  
+
+<br>
 
 \newpage
 
-##### Figure 5. Number of views and downloads by resource type and module in Zenodo.
-Full record (no temporal filtering).  
+##### 5. Number of views and downloads by resource type and module in Zenodo.
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=13, fig.height=7, out.width="100%", fig.align="center"}
+<br>
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=8, out.width="90%", fig.align="center"}
 
 custom_labels <- function(x) {
   ifelse(x == "Open Research Data, Research Data Management, and FAIR",
@@ -502,7 +562,7 @@ custom_labels <- function(x) {
          x)
 }
 
-zenodo_fig3 <- ggplot(df_long, aes(
+fig5 <- ggplot(df_long, aes(
   x = resource_group,
   y = value,
   fill = metric
@@ -520,11 +580,13 @@ zenodo_fig3 <- ggplot(df_long, aes(
   facet_wrap(~ resource_name, 
             labeller = labeller(resource_name = custom_labels),
              scales = "free_x", 
-             ncol = 4) +  # 5 panels per row
+             ncol = 3) +  # 5 panels per row
   labs(
     x = "Resource type",
     y = "Count",
-    fill = ""
+    fill = "",
+    caption = "<b>Selected time period:</b> Full record (no temporal filtering).<br>
+       <b>Data source:</b> Zenodo."
   ) +
   theme_minimal() +
   theme(legend.position = "bottom",
@@ -532,13 +594,20 @@ zenodo_fig3 <- ggplot(df_long, aes(
     axis.text.y = element_text(size = 10),
     legend.text = element_text(size = 10),
     plot.title = element_text(size = 14),
-    strip.text = element_text(size = 10)
+    strip.text = element_text(size = 10),
+    plot.caption = element_markdown(size = 11, hjust = 1, lineheight = 1.3)
   )
-zenodo_fig3
+
+fig5
 
 ```
+<br>
 
+Figure 5 shows the distribution of *views* and *downloads* per resource type (modules, intro videos, and case studies), as recorded in Zenodo.   
+Blue and red bars represent views and downloads, respectively. Each panel corresponds to a module content, allowing comparison across resource types within the same module. Only 6 of the 10 modules include associated case studies (PowToon videos).  
+Intro videos account for the majority of total engagement, whereas modules generally receive fewer views and downloads.  
 
+\newpage
 ```{r, include=FALSE}
 df_zenodo_other_resources <- zenodo_records |>
   filter(institution != "eth_domain_measure3")
@@ -561,15 +630,14 @@ df_other_long <- df_other_summary |>
 
 ```
 
+<br>
 
-\newpage
+##### 6. Number of views and downloads of other resources by institution in Zenodo.
 
-##### Figure 6. Number of views and downloads of other resources by institution in Zenodo.
-Full record (no temporal filtering).  
+<br>
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=7, out.width="85%", fig.align="center"}
 
-```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=10, fig.height=7, out.width="90%", fig.align="center"}
-
-zenodo_fig4 <- ggplot(df_other_long, aes(
+fig6 <- ggplot(df_other_long, aes(
   x = institution,
   y = value,
   fill = metric
@@ -589,7 +657,9 @@ zenodo_fig4 <- ggplot(df_other_long, aes(
   labs(
     x = "Institution",
     y = "Count",
-    fill = ""
+    fill = "",
+    caption = "<b>Selected time period:</b> Full record (no temporal filtering).<br>
+    <b>Data source:</b> Zenodo."
   ) +
   theme_minimal() +
   theme(legend.position = "bottom",
@@ -597,9 +667,45 @@ zenodo_fig4 <- ggplot(df_other_long, aes(
     axis.text.y = element_text(size = 10),
     legend.text = element_text(size = 10),
     plot.title = element_text(size = 14),
-    strip.text = element_text(size = 10)
+    strip.text = element_text(size = 10),
+    plot.caption = element_markdown(size = 13, hjust = 1, lineheight = 1.3)
   )
-zenodo_fig4
+
+fig6
 
 ```
+<br>
 
+Figure 6 shows the distribution of *views* and *downloads* for other resources (i.e., no module related) in Zenodo, aggregated by institution.    
+Blue and red bars represent views and downloads, respectively. Values are stacked to show total engagement per institution.   
+The high views and downloads in EMPA correspond to the Series of video presentation on Research Data Management by Matthias Roesslein.   
+
+<br>
+\newpage
+
+##### List of variables used for the analysis of Data Management Campus module usage
+
+<br>
+
+| indicator | source | estimation | description |
+|-----------|--------|-------------|-------------|
+| **user_id** | openlearnity | direct measure | user identifier |
+| **module_title** | openlearnity | direct measure | module title |
+| **last_login** | openlearnity | direct measure | date of last login in the module. This variable is overwritten each time the same user logs in. |
+| **logged_users_week** | openlearnity | calculated as count of unique users grouped by week (from last_login) and module | number of unique users per week for each module |
+| **logged_users** | openlearnity | calculated as count of unique users per module | number of logged users per module during a specific period of time |
+| **module_title** | matomo_ol | direct measure | module title |
+| **unique_pageviews** | matomo_ol | direct measure | number of page views counted once per session; unique page views of the module’s “About” page |
+| **entrances** | matomo_ol | direct measure | number of sessions starting on the “About” page |
+| **actions_after_entry** | matomo_ol | direct measure | number of interactions (clicks, downloads, pageviews) performed after session start on the “About” page |
+| **bounces** | matomo_ol | direct measure | sessions where the user leaves after viewing only one page |
+| **engagement_per_entrance** | matomo_ol | calculated as actions_after_entry / entrances | average number of user interactions after session start on the “About” page |
+| **bounce_rate** | matomo_ol | calculated as bounces / entrances | proportion of visits where users leave after one page |
+| **page_title** | google_analytics_ord | direct measure | title of the pages in the ORD Portal |
+| **views** | google_analytics_ord | direct measure | total number of page views; proxy of intensity of use per page |
+| **active_users** | google_analytics_ord | direct measure | number of users who engaged with the page (session last at least 10 seconds) |
+| **record_id** | zenodo | direct measure | Zenodo resource identifier |
+| **resource_title** | zenodo | direct measure | resource title |
+| **resource_type** | zenodo | direct measure | type of resource (lesson, presentation, video/audio) |
+| **views** | zenodo | direct measure | number of times resource was viewed |
+| **downloads** | zenodo | direct measure | number of times resource was downloaded |

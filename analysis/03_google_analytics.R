@@ -31,8 +31,21 @@ google_analytics_jan_mar_2026 <- google_analytics_20260101_20260331 |>
          key_events = Key.events,
          total_revenue = Total.revenue) |>
   mutate(page_title = str_remove(page_title, " \\| Open Research Data Portal")) |>
-  filter(page_title %in% ord_pages)
-
+  filter(page_title %in% ord_pages) |>
+  mutate(page_title = recode(page_title,
+                             "Training Archive" = "Training",
+                             "Documents Archive" = "Documents",
+                             "Research Data Services Explorer" = "Services",
+                             "Open Research Data Portal" = "Home")) |>
+  mutate(page_title = factor(page_title,
+                             levels = c(
+                               "Home",
+                               "Projects",
+                               "Training",
+                               "Services",
+                               "Documents",
+                               "About"
+                             )))
 
 # views = intensity of use per page
 # active_users = reach per page
@@ -42,22 +55,7 @@ df_ga_metrics <- google_analytics_jan_mar_2026 |>
   select(
     page_title,
     views,
-    active_users,
-    views_per_user)
-
-# buble chart
-ggplot(df_ga_metrics, aes(x = active_users,
-               y = views,
-               size = views_per_user,
-               label = page_title)) +
-  geom_point(alpha = 0.6) +
-  geom_text(vjust = -0.8, size = 3) +
-  scale_size_continuous(range = c(3, 12)) +
-  theme_minimal() +
-  labs(x = "Active Users",
-       y = "Views",
-       size = "Views per User",
-       title = "Page Engagement: Reach vs Depth")
+    active_users)
 
 # reshape for plotting ----
 metrics_long_ga <- pivot_longer(df_ga_metrics,
@@ -101,5 +99,3 @@ ggplot(metrics_long_ga,
     plot.title = element_text(size = 14),
     axis.title = element_text(size = 12)
   )
-
-# Training Archive → highest views (1000) but fewer users (374) -> very deep engagement per user (strong content usage)
