@@ -1,5 +1,6 @@
 # This script loads data on enrollment from Open Learnity, calculates key metrics, and generates corresponding visualizations.
 
+library(readr)
 library(dplyr)
 library(tidyverse)
 library(lubridate)
@@ -10,8 +11,36 @@ library(here)
 # load data
 folder_path <- here::here("data/openlearnity")
 
-files <- list.files(folder_path, pattern = "*.csv", full.names = TRUE)
+# List all CSV files except id.csv
+files <- list.files(
+  path = folder_path,
+  pattern = "\\.csv$",
+  full.names = TRUE
+)
 
+# Exclude files containing "id.csv"
+files <- files[!grepl("id\\.csv", basename(files))]
+
+# keep only the columns id, last_login, date_joined
+wanted_cols <- c("id", "last_login", "date_joined")
+
+# Process each file
+for (file in files) {
+  
+  cat("Processing:", basename(file), "\n")
+  
+  # Read CSV
+  df <- read_csv(file, show_col_types = FALSE)
+  
+  # Keep only selected columns
+  df_selected <- df %>%
+    select(any_of(wanted_cols))
+  
+  # Save back with the same name
+  write_csv(df_selected, file)
+}
+
+# join datasets
 df_openlearnity <- files |>
   map_dfr(~ read_csv(.x, show_col_types = FALSE) |>
             mutate(

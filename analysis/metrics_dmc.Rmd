@@ -1,8 +1,8 @@
 ---
 title: "Metrics for the Data Management Campus modules"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 date: "`r Sys.Date()`"
 ---
 
@@ -17,8 +17,8 @@ library(ggtext)
 
 <br>
 
-This document loads and visualizes data on the usage of modules from the Data Management Campus.  
-The data are obtained from four sources: the OpenLearnity platform, Matomo, Google Analytics, and Zenodo.  
+This document loads and visualizes data on the use of modules from the Data Management Campus.  
+The data are obtained from four sources: OpenLearnity, Matomo (metrics on the OpenLearnity modules), Google Analytics (metrics on the ORD Portal), and Zenodo OER.  
 A list of the variables used in the analysis is provided below.  
 
 ```{r, include=FALSE}
@@ -143,7 +143,7 @@ fig1
 
 Figure 1 shows weekly user activity across modules based on OpenLearnity enrollment data.     
 Blue bars represent the *logged_users_week* variable (number of unique users logging in per module each week).   
-Weekly user activity is generally low, ranging from 0 to about 6 users per week depending on the module, with no strong differences in magnitude across time.   
+Weekly user activity is generally low, ranging from 0 to about 6 users per week depending on the module, with no strong differences in magnitude over time.   
 Red dashed lines indicate the timing of the marketing campaign, corresponding to the week when the modules were advertised on ETH Campus Channel screens. No systematic change in activity is visible around the campaign period.
 
 ```{r, include=FALSE}
@@ -273,7 +273,7 @@ metrics_ol_matomo <- bind_rows(metrics_long_openlearnity, metrics_long_matomo) |
 ##### 2. User behaviour from Open Learnity and Matomo.
 
 <br>
-```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=11, fig.height=6, out.width="95%", fig.align="center"}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.width=12, fig.height=6, out.width="100%", fig.align="center"}
 
 fig2 <- ggplot(metrics_ol_matomo,
        aes(x = reorder(module_title, value),
@@ -282,7 +282,7 @@ fig2 <- ggplot(metrics_ol_matomo,
   geom_col(aes(fill = metric)) +
   coord_flip() +
   
-  facet_wrap(~metric_label, scales = "free_x", nrow = 1) +
+  facet_wrap(~metric_label, scales = "free_x", nrow = 1, strip.position = "bottom") +
   
   scale_y_continuous(labels = scales::label_number(accuracy = 1)) +
   
@@ -294,8 +294,8 @@ fig2 <- ggplot(metrics_ol_matomo,
   )) +
   
   labs(
-    title = "User behaviour from Open Learnity and Matomo",
-    x = "",
+    title = "",
+    x = "Module",
     y = "",
     fill = "",
     caption = "<b>Selected time period:</b> Jan-Mar 2026.<br>
@@ -306,9 +306,11 @@ fig2 <- ggplot(metrics_ol_matomo,
     legend.position = "none",
     axis.text.x = element_text(size = 11),
     axis.text.y = element_text(size = 11),
-    strip.text = element_text(size = 12),
-    plot.title = element_text(size = 14),
-    axis.title = element_text(size = 12),
+    strip.text = element_text(size = 11),
+    strip.placement = "outside",
+    strip.background = element_blank(),
+    plot.title = element_text(size = 13),
+    axis.title = element_text(size = 11),
     plot.caption = element_markdown(size = 12, hjust = 1, lineheight = 1.3),
   )
 
@@ -318,26 +320,24 @@ fig2
 
 <br>
 
-Figure 2 shows user behaviour across modules using Open Learnity user data and Matomo analytics. Four indicators are displayed per module: *logged_users* (Open Learnity enrollment), *unique_pageviews*, *engagement_per_entrance*, and *bounce_rate* (Matomo metrics).  
+Figure 2 shows user behaviour across modules using OpenLearnity user data and Matomo analytics. Four indicators are displayed per module: *logged_users* (Open Learnity enrollment), *unique_pageviews*, *engagement_per_entrance*, and *bounce_rate* (Matomo metrics).    
 
-The four metrics together describe different dimensions of user behaviour:  
-Logged users represent the number of participants enrolled in each module.    
-Unique pageviews is the number of distint page views of the module’s “About” page ( counted once per session).  
-Engagement per entrance is the average number of user interactions after sessions start on the “About” page of a module. This is a proxy for content depth and interest.  
-Bounce rate is the proportion of single-page sessions without further interaction.  
+The four metrics together describe different dimensions of user behaviour:    
+Logged users represent the number of participants enrolled in each module.       
+Unique pageviews refer to the number of distinct page views of the module’s “About” page (counted once per session).    
+Engagement per entrance is the average number of user interactions after sessions start on the “About” page of a module. This serves as a proxy for content depth and user interest.   
+Bounce rate is the proportion of single-page sessions with no further interaction.   
 
-Best-performing module:     
-The Data and Code Licenses shows the strongest overall engagement in the dataset. It combines a relatively high number of unique pageviews (72) with the highest engagement per entrance (10.1 actions per session), indicating that users interact intensively once they enter the content. In addition, it has one of the lowest bounce rates (21%), suggesting strong retention.   
+Best-performing module:    
+The Data and Code Licenses module shows the strongest overall engagement in the dataset. It combines a relatively high number of unique pageviews (72) with the highest engagement per entrance (10.1 actions per session), indicating that users interact intensively once they access the content. In addition, it has one of the lowest bounce rates (21%), suggesting strong user retention.   
 
 Lowest-performing module:    
-The Writing Data Management Plans module shows the weakest engagement profile. Although it receives a moderate number of unique pageviews (34), it has the lowest engagement per entrance (3.87 actions per session), indicating limited interaction once users enter the module. Its bounce rate (40%) is also relatively high, suggesting that a significant proportion of users leave without further interactions.   
-
+The Writing Data Management Plans module shows the weakest engagement profile. Although it receives a moderate number of unique pageviews (34), it has the lowest engagement per entrance (3.87 actions per session), indicating limited interaction once users enter the module. Its bounce rate (40%) is also relatively high, suggesting that a substantial proportion of users leave without further interactions.     
 Limitations:  
 Data is based on the *About* pages and does not capture complete user journeys across the platform, including navigation through home pages or across modules.  
 The indicators are best interpreted as proxies for interaction intensity rather than direct measures of course progression or learning outcomes.  
 
 \newpage
-
 ```{r, include=FALSE}
 
 # Google Analytics
@@ -445,8 +445,8 @@ fig3
 <br>
 
 Figure 3 shows the distribution of user engagement across ORD portal pages based on Google Analytics data.  
-Blue and red bars represent *views* (total number of page views; proxy of intensity of use per page) and *active_users* (number of users whose session lasted at least 10 seconds; proxy of reach per page) for each ORD portal page, obtained from Google Analytics.   
-The Training page correspond to the Data Management Campus and shows the highest views (1000) but fewer users (374), indicating high engagement per user (strong content usage).  
+Blue and red bars represent *views* (total number of page views; a proxy of intensity of use per page) and *active_users* (number of users whose session lasted at least 10 seconds; a proxy of reach per page) for each ORD portal page, obtained from Google Analytics.   
+The Training page corresponds to the Data Management Campus and shows the highest number of views (1,000) but fewer active users (374), indicating high engagement per user (i.e., strong content usage).  
 
 \newpage
 ```{r, include=FALSE}
@@ -544,8 +544,8 @@ fig4
 <br>
 
 Figure 4 displays the combined total of *views* and *downloads* per resource, as recorded in Zenodo.  
-Blue, green, and red bars represent different resource types: modules, intro videos, and case studies, respectively. Only 6 of the 10 modules include associated case studies (PowToon videos).   
-Intro videos account for the majority of total engagement, whereas modules generally receive fewer views and downloads.  
+Blue, green, and red bars represent different resource types: modules, introductory videos, and case studies, respectively. Only 6 of the 10 modules include associated case studies (PowToon videos).   
+Introductory videos account for the majority of total engagement, whereas modules generally receive fewer views and downloads.  
 
 <br>
 
@@ -604,9 +604,9 @@ fig5
 ```
 <br>
 
-Figure 5 shows the distribution of *views* and *downloads* per resource type (modules, intro videos, and case studies), as recorded in Zenodo.   
-Blue and red bars represent views and downloads, respectively. Each panel corresponds to a module content, allowing comparison across resource types within the same module. Only 6 of the 10 modules include associated case studies (PowToon videos).  
-Intro videos account for the majority of total engagement, whereas modules generally receive fewer views and downloads.  
+Figure 5 shows the distribution of *views* and *downloads* per resource type (modules, introductory videos, and case studies), as recorded in Zenodo.   
+Blue and red bars represent views and downloads, respectively. Each panel corresponds to a module content, allowing comparison across resource types within the same module. Also notice that only 6 of the 10 modules include associated case studies (PowToon videos).  
+Introductory videos account for the majority of total engagement, whereas modules generally receive fewer views and downloads.  
 
 \newpage
 ```{r, include=FALSE}
@@ -656,7 +656,7 @@ fig6 <- ggplot(df_other_long, aes(
     downloads = "Downloads"
   )) +
   labs(
-    x = "Institution",
+    x = "Institution of the OER author",
     y = "Count",
     fill = "",
     caption = "<b>Selected time period:</b> Full record (no temporal filtering).<br>
@@ -677,9 +677,9 @@ fig6
 ```
 <br>
 
-Figure 6 shows the distribution of *views* and *downloads* for other resources (i.e., no module related) in Zenodo, aggregated by institution.    
-Blue and red bars represent views and downloads, respectively. Values are stacked to show total engagement per institution.   
-The high views and downloads in EMPA correspond to the Series of video presentation on Research Data Management by Matthias Roesslein.   
+Figure 6 shows the distribution of *views* and *downloads* for other resources (i.e., non-module-related content) in Zenodo, aggregated by institution of the resource author (i.e., the institution that created the content).  
+Blue and red bars represent views and downloads, respectively. Values are stacked to show total engagement per institution.  
+The high number of views and downloads for EMPA corresponds to the series of video presentations on Research Data Management by Matthias Roesslein.  
 
 <br>
 \newpage
