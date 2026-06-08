@@ -8,7 +8,7 @@ library(ggplot2)
 # data for this script is downloaded using the 04_zenodo_download.R script
 
 # load data
-zenodo_records <- read.csv(here("data", "zenodo", "zenodo_records.csv"))
+zenodo_records <- read.csv(here("data", "zenodo", "zenodo_records_08-06-2026.csv"))
 
 df_zenodo <- zenodo_records |>
   filter(
@@ -26,18 +26,19 @@ df_zenodo <- zenodo_records |>
   ) |>
   filter(!is.na(resource_group)) |>
   mutate(
-      resource_name = case_when(
-        resource_group == "module" ~ str_extract(title, '(?<=Module \\").+?(?=\\")'),
-        resource_group == "case_study" ~ str_remove(title, "^Case study animated video for learning module about "),
-        resource_group == "intro_video" ~ str_remove(title, "^Introduction Video to "),
-        TRUE ~ NA_character_
-      ),
-      resource_name = if_else(
-        resource_name == "Data Management Plan",
-        "Writing Data Management Plans",
-        resource_name
-      )
+    resource_name = case_when(
+      resource_group == "module" ~ str_extract(title, '(?<=Module \\").+?(?=\\")'),
+      resource_group == "case_study" ~ str_remove(title, "^Case study animated video for learning module about "),
+      resource_group == "intro_video" ~ str_remove(title, "^Introduction Video to "),
+      TRUE ~ NA_character_
+    ),
+    resource_name = case_when(
+      resource_name == "Data Management Plan" ~ "Writing Data Management Plans",
+      resource_name == "Data Publication and Preservation" ~ "Data Publishing and Long-Term Preservation",
+      resource_name == "Open Data, FAIR, and Research Data Management" ~ "Open Research Data, Research Data Management, and FAIR",
+      TRUE ~ resource_name
     )
+  )
 
 # Prepare data
 df_summary <- df_zenodo |>
@@ -128,10 +129,10 @@ zenodo_fig3
 # Plot other resources ----
 
 df_zenodo_other_resources <- zenodo_records |>
-  filter(institution != "eth_domain_measure3")
+  filter(affiliation != "M3")
 
 df_other_summary <- df_zenodo_other_resources |>
-  group_by(title, institution) |>
+  group_by(title, affiliation) |>
   summarise(
     views = sum(views),
     downloads = sum(downloads),
@@ -147,7 +148,7 @@ df_other_long <- df_other_summary |>
   )
 
 zenodo_fig4 <- ggplot(df_other_long, aes(
-  x = institution,
+  x = affiliation,
   y = value,
   fill = metric
 )) +
@@ -166,7 +167,7 @@ zenodo_fig4 <- ggplot(df_other_long, aes(
   labs(
     x = "Institution",
     y = "Value",
-    title = "Number of views and downloads by institution in Zenodo",
+    title = "Number of views and downloads submitted by institution in Zenodo",
     fill = ""
   ) +
   theme_minimal() +

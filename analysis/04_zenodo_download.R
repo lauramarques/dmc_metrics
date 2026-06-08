@@ -6,8 +6,13 @@ library(dplyr)
 library(stringr)
 
 # Download multiple resources from Zenodo ----
-
 zenodo_oer <- read.csv("data/zenodo/zenodo_oer.csv")
+
+zenodo_oer <- zenodo_oer |>
+  filter(status == "accepted") |>
+  mutate(resource_id = str_extract(doi, "\\d+$"),
+         resource_id = as.integer(resource_id),
+         submission_date = as_date(submission_date, origin = "1899-12-30"))
 
 resource_id <- zenodo_oer$resource_id
 
@@ -28,6 +33,10 @@ df <- do.call(rbind, lapply(resource_id, get_zenodo_metrics))
 
 df_zenodo <- df |>
   left_join(zenodo_oer) |>
-  select(-resource_title)
+  select(-c(resource_title, doi, submission_date, status))
 
-write.csv(df_zenodo, "data/zenodo/zenodo_records.csv", row.names = FALSE)
+write.csv(
+  df_zenodo,
+  paste0("data/zenodo/zenodo_records_", format(Sys.Date(), "%d-%m-%Y"), ".csv"),
+  row.names = FALSE
+)
