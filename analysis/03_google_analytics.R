@@ -9,6 +9,8 @@ library(ggplot2)
 
 # data for this script is manually downloaded from the Google Analytics platform quaterly.
 
+# Direct measures: page_title, views, active_users  
+
 # load data ----
 google_analytics_20260101_20260331 <- read.csv(here("data", "google_analytics", "google_analytics_20260101_20260331.csv"))
 
@@ -74,10 +76,11 @@ metrics_long_ga <- pivot_longer(df_ga_metrics,
   )
 
 # plot ----
-ggplot(metrics_long_ga, 
-       aes(x = reorder(page_title, value),
-          y = value,
-          fill = metric)) +
+
+fig3 <- ggplot(metrics_long_ga, 
+               aes(x = reorder(page_title, value),
+                   y = value,
+                   fill = metric)) +
   geom_bar(stat = "identity", position = "dodge") +
   coord_flip() +
   scale_fill_discrete(labels = c(
@@ -85,11 +88,10 @@ ggplot(metrics_long_ga,
     active_users = "Active users"
   )) +
   labs(
-    title = "Page views and active users for the ORD pages in Google Analytics",
-    y = "Count",
-    x = "ORD portal main pages",
-    fill = ""
-  ) +
+    y = "Metric",
+    x = "ORD portal pages",
+    caption = "<b>Selected time period:</b> Jan-Mar 2026.<br>
+       <b>Data source:</b> Google Analytics.") +
   theme_minimal() +
   theme(
     legend.position = "bottom",
@@ -97,5 +99,9 @@ ggplot(metrics_long_ga,
     axis.text.y = element_text(size = 11),
     strip.text = element_text(size = 12),
     plot.title = element_text(size = 14),
-    axis.title = element_text(size = 12)
+    axis.title = element_text(size = 12),
+    legend.text = element_text(size = 11),
+    plot.caption = element_markdown(size = 12, hjust = 1, lineheight = 1.3)
   )
+
+fig3

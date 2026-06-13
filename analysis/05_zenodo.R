@@ -7,6 +7,8 @@ library(ggplot2)
 
 # data for this script is downloaded using the 04_zenodo_download.R script
 
+# Direct measures: record_id, resource_title, resource_type, views, downloads
+
 # load data
 zenodo_records <- read.csv(here("data", "zenodo", "zenodo_records_08-06-2026.csv"))
 
@@ -57,7 +59,7 @@ df_long <- df_summary |>
     values_to = "value"
   )
 
-zenodo_fig1 <- ggplot(df_long, aes(
+ggplot(df_long, aes(
   x = resource_group,
   y = value,
   fill = metric
@@ -80,10 +82,9 @@ zenodo_fig1 <- ggplot(df_long, aes(
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
-zenodo_fig1
 
-zenodo_fig2 <- ggplot(df_summary, aes(x = reorder(resource_name, total), 
-                                      y = total, fill = resource_group)) +
+fig4 <- ggplot(df_summary, aes(x = reorder(resource_name, total), 
+                               y = total, fill = resource_group)) +
   geom_col() +
   coord_flip() +
   scale_fill_discrete(labels = c(
@@ -94,13 +95,29 @@ zenodo_fig2 <- ggplot(df_summary, aes(x = reorder(resource_name, total),
   labs(
     x = "Module",
     y = "Total (views + downloads)",
-    title = "Total engagement by resource type and module in Zenodo",
-    fill = "Resource type"
+    fill = "Resource type",
+    caption = "<b>Selected time period:</b> Full record (no temporal filtering).<br>
+       <b>Data source:</b> Zenodo."
   ) +
-  theme(legend.position = "bottom")
-zenodo_fig2 
-  
-zenodo_fig3 <- ggplot(df_long, aes(
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    axis.text.x = element_text(size = 11),
+    axis.text.y = element_text(size = 11),
+    legend.text = element_text(size = 11),
+    plot.title = element_text(size = 14),
+    #plot.caption = element_text(hjust = 0.5, size = 12)     
+    plot.caption = element_markdown(size = 12, hjust = 1, lineheight = 1.3)
+  )
+fig4
+
+custom_labels <- function(x) {
+  ifelse(x == "Open Research Data, Research Data Management, and FAIR",
+         "Open Research Data, Research \nData Management, and FAIR",
+         x)
+}
+
+fig5 <- ggplot(df_long, aes(
   x = resource_group,
   y = value,
   fill = metric
@@ -115,16 +132,28 @@ zenodo_fig3 <- ggplot(df_long, aes(
     views = "Views",
     downloads = "Downloads"
   )) +
-  facet_wrap(~ resource_name, scales = "free_x", ncol = 2) +  # 5 panels per row
+  facet_wrap(~ resource_name, 
+             labeller = labeller(resource_name = custom_labels),
+             scales = "free_x", 
+             ncol = 3) +  # 5 panels per row
   labs(
     x = "Resource type",
     y = "Count",
-    title = "Number of views and downloads by resource type and module in Zenodo",
-    fill = ""
+    fill = "",
+    caption = "<b>Selected time period:</b> Full record (no temporal filtering).<br>
+       <b>Data source:</b> Zenodo."
   ) +
   theme_minimal() +
-  theme(legend.position = "bottom")
-zenodo_fig3
+  theme(legend.position = "bottom",
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        plot.title = element_text(size = 14),
+        strip.text = element_text(size = 10),
+        plot.caption = element_markdown(size = 11, hjust = 1, lineheight = 1.3)
+  )
+
+fig5
 
 # Plot other resources ----
 
@@ -147,7 +176,7 @@ df_other_long <- df_other_summary |>
     values_to = "value"
   )
 
-zenodo_fig4 <- ggplot(df_other_long, aes(
+fig6 <- ggplot(df_other_long, aes(
   x = affiliation,
   y = value,
   fill = metric
@@ -172,4 +201,4 @@ zenodo_fig4 <- ggplot(df_other_long, aes(
   ) +
   theme_minimal() +
   theme(legend.position = "bottom")
-zenodo_fig4
+fig6

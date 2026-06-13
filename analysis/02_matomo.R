@@ -9,6 +9,14 @@ library(ggplot2)
 
 # data for this script is manually downloaded from the Matomo platform quaterly.
 
+# Matomo ----
+
+# Direct measures: module_title, unique_pageviews, entrances, actions_after_entry, bounces
+# Derived variables: engagement_per_entrance, bounces rate
+
+# unique_pageviews: proxy for reach / interest
+# engagement_per_entrance: proxy for depth of interaction
+
 # load data ----
 matomo_pages_20260101_20260331 <- read.csv(here("data", "matomo", "matomo_pages_20260101_20260331.csv"))
 
@@ -105,14 +113,14 @@ metrics_ol_matomo <- bind_rows(metrics_long_openlearnity, metrics_long_matomo) |
   ))
 
 # plot combine OL and Matomo
-ggplot(metrics_ol_matomo,
-       aes(x = reorder(module_title, value),
-           y = value)) +
+fig2 <- ggplot(metrics_ol_matomo,
+               aes(x = reorder(module_title, value),
+                   y = value)) +
   
   geom_col(aes(fill = metric)) +
   coord_flip() +
   
-  facet_wrap(~metric_label, scales = "free_x", nrow = 1) +
+  facet_wrap(~metric_label, scales = "free_x", nrow = 1, strip.position = "bottom") +
   
   scale_y_continuous(labels = scales::label_number(accuracy = 1)) +
   
@@ -124,8 +132,8 @@ ggplot(metrics_ol_matomo,
   )) +
   
   labs(
-    title = "User behaviour from Open Learnity and Matomo",
-    x = "",
+    title = "",
+    x = "Module",
     y = "",
     fill = "",
     caption = "<b>Selected time period:</b> Jan-Mar 2026.<br>
@@ -136,8 +144,12 @@ ggplot(metrics_ol_matomo,
     legend.position = "none",
     axis.text.x = element_text(size = 11),
     axis.text.y = element_text(size = 11),
-    strip.text = element_text(size = 12),
-    plot.title = element_text(size = 14),
-    axis.title = element_text(size = 12),
+    strip.text = element_text(size = 11),
+    strip.placement = "outside",
+    strip.background = element_blank(),
+    plot.title = element_text(size = 13),
+    axis.title = element_text(size = 11),
     plot.caption = element_markdown(size = 12, hjust = 1, lineheight = 1.3),
   )
+
+fig2
