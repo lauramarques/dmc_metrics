@@ -115,7 +115,7 @@ df_openlearnity_weekly_activity <- df_openlearnity |>
 # define campaign start
 campaign_dates <- tibble(
   module = c("dmp", "documentation", "fair", "licences", "openformats", "organisation", "publishing", "reproducibility", "sensitive", "storage"),
-  campaign_start = as.Date(c("2026-03-23", "", "2026-02-23", "", "2026-04-14", "", "", "", "", ""))
+  campaign_start = as.Date(c("2026-03-23", "2026-06-29", "2026-02-23", "", "", "2026-04-21", "", "", "2026-05-19", ""))
 )
 
 # plot
@@ -131,7 +131,7 @@ fig1 <- ggplot(df_openlearnity_weekly_activity |>
     linewidth = 0.8
   ) +
   scale_x_date(
-    date_breaks = "1 months",
+    date_breaks = "2 months",
     date_labels = "%b\n%Y"
   ) +
   facet_wrap(~ module, scales = "free_y", nrow = 2, ncol = 5,
