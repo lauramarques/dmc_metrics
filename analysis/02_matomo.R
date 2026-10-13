@@ -74,7 +74,7 @@ matomo_metrics <- matomo_jan_mar_2026 |>
   )
 
 # reshape for plotting ----
-metrics_long_matomo <- matomo_metrics |>
+matomo_metrics_long <- matomo_metrics |>
   pivot_longer(
     cols = c(unique_pageviews, engagement_per_entrance, bounce_rate),
     names_to = "metric",
@@ -94,7 +94,7 @@ metrics_long_matomo <- matomo_metrics |>
   )
 
 # get data from Openlearnity
-metrics_long_openlearnity <- df_openlearnity_users |>
+openlearnity_metrics_long <- df_openlearnity_users |>
   mutate(
     metric = "total_users",
     metric_label = "Logged users",
@@ -104,7 +104,7 @@ metrics_long_openlearnity <- df_openlearnity_users |>
   select(module_title, metric, metric_label, value)
 
 # combine datasets OL and Matomo
-metrics_ol_matomo <- bind_rows(metrics_long_openlearnity, metrics_long_matomo) |>
+metrics_ol_matomo <- bind_rows(openlearnity_metrics_long, matomo_metrics_long) |>
   mutate(metric_label = factor(metric_label,
                                levels = c("Logged users",
                                           "Unique pageviews",
