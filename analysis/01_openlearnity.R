@@ -15,14 +15,30 @@ library(here)
 folder_path <- here::here("data/openlearnity")
 
 # List all CSV files except id.csv
-files <- list.files(
+original_files <- list.files(
   path = folder_path,
   pattern = "\\.csv$",
   full.names = TRUE
 )
 
+# rename files
+renames <- c(
+  "data_management_plan_student_profile_info_" = "dmp_",
+  "ETH_sensitive_data_student_profile_info_"   = "sensitive_data_",
+  "open_fair_data_student_profile_info_"       = "fair_data",
+  "open_formats_code_student_profile_info_"    = "openformats_code_",
+  "storage_backup_versioning_student_profile_info_" = "storage_backup_versioning_",
+  "ETH_RDM-01_2024_student_profile_info_" = "publishing_",
+  "ETH_data_licences_student_profile_info_" = "licences_",
+  "ETH_code_reproducibility_student_profile_info_" = "reproducibility_",
+  "ETH_documentation_metadata_student_profile_info_" = "documentation_metadata_",
+  "open_data_organisation_student_profile_info_" = "organisation_"
+)
+
+renamed_files <- str_replace_all(original_files, renames)
+
 # Exclude files containing "id.csv"
-files <- files[!grepl("id\\.csv", basename(files))]
+files <- renamed_files[!grepl("id\\.csv", basename(renamed_files))]
 
 # keep only the columns id, last_login, date_joined
 wanted_cols <- c("id", "last_login", "date_joined")
@@ -160,8 +176,8 @@ fig1 <- ggplot(df_openlearnity_weekly_activity |>
     strip.text = element_text(size = 11),
     plot.title = element_text(size = 16),
     axis.title = element_text(size = 10),
-    #plot.caption = element_text(hjust = 0, face = "bold", size = 12)
-    plot.caption = element_markdown(size = 12, hjust = 1, lineheight = 1.3)
+    # Single element_markdown call combining all formatting options:
+    plot.caption = ggtext::element_markdown(size = 12, hjust = 0, lineheight = 1.3)
   )
 
 fig1 
